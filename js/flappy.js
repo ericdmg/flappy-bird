@@ -64,14 +64,17 @@ function Barriers(height, width, opening, spaceBetweenBarriers, notifyPoints){
             }
 
             const middle = width / 2
+            const a = this.pairs[0].inferior.element.style.width
+            console.log(a)
             const mouthpiece = document.querySelector('.mouthpiece')
-            const mouthPieceWidth = parseInt(getComputedStyle(mouthpiece).width.split('px')[0])
-            console.log(mouthPieceWidth)
+            const bird = document.querySelector('.bird')
+            const mouthPieceWidth = mouthpiece.computedStyleMap().get('width').value
+            const birdWidth = bird.computedStyleMap().get('width').value / 2
             
-            const middleCrossed = pair.getX() + displacement >= middle - mouthPieceWidth - 30
-                && pair.getX() < middle - mouthPieceWidth - 30
+            const middleCrossed = pair.getX() + displacement >= middle - mouthPieceWidth - birdWidth
+                && pair.getX() < middle - mouthPieceWidth - birdWidth
 
-            //middleCrossed && notifyPoints()
+            middleCrossed && notifyPoints()
         })
     }
 }
@@ -89,7 +92,7 @@ function Bird(gameHeight){
     window.onkeyup = e => flying = false
 
     this.animate = () => {
-        const newY = this.getY() (flying ? 8 : -5)
+        const newY = this.getY() + (flying ? 8 : -5)
         const maximumHeight = gameHeight - this.element.clientHeight
 
         if(this.getY() <= 0){
@@ -103,14 +106,64 @@ function Bird(gameHeight){
     this.setY(gameHeight / 2)
 }
 
-const barreiras = new Barriers(700, 1200, 200, 400)
-// const passaro = new Passaro(700)
-const areaDoJogo = document.querySelector('[wm-flappy]')
+function Progress(){
+    this.element = createNewElement('span', 'progress')
+    this.updatePoints = points => this.element.innerHTML = points
+    this.updatePoints(0)
+}
 
-// areaDoJogo.appendChild(new Progresso().elemento)
-// areaDoJogo.appendChild(passaro.elemento)
-barreiras.pairs.forEach(par => areaDoJogo.appendChild(par.element))
-setInterval(() => {
-    barreiras.animate()
-    //passaro.animar()
-}, 20)
+function areOverlapping(elementA, elementB){
+    const a = elementA.getBoundingClientRect()
+    const b = elementB.getBoundingClientRect()
+
+    const horizontal = a.left + a.width >= b.left
+        && b.left + b.width >= a.left
+
+    const vertical = a.top + a.height >= b.top
+        && b.top + b.height >= a.top
+
+    return horizontal && vertical
+}
+
+function collided(bird, barriers){
+    let collided = false
+
+    barriers.pairs.forEach(pairOfBarriers => {
+        if(!collided){
+            const superior = pairOfBarriers.superior.element
+            const inferior = pairOfBarriers.inferior.element
+            collided = areOverlapping(bird.element, superior)
+                || areOverlapping(bird.element,inferior)
+        }
+    })
+    return collided;
+}
+
+function FlappyBird(){
+    let points = 0
+
+    const gameArea = document.querySelector('[wm-flappy]')
+    const height = gameArea.clientHeight
+    const width = gameArea.clientWidth
+
+    const progress = new Progress()
+    const barriers = new Barriers(height, width, 200, 400, 
+        () => progress.updatePoints(++points))
+
+    const bird = new Bird(height)
+    gameArea.appendChild(progress.element)
+    gameArea.appendChild(bird.element)
+    barriers.pairs.forEach(pair => gameArea.appendChild(pair.element))
+
+    this.start = () => {
+        const temporizador = setInterval(() => {
+            barriers.animate()
+            bird.animate()
+            if(collided(bird, barriers)){
+                clearInterval(temporizador)
+            }
+        }, 20)
+    }
+}
+
+new FlappyBird().start()
