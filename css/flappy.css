@@ -62,3 +62,12 @@
     font-size: 70px;
     z-index: 100;
 }
+
+.game-over{
+    position: absolute;
+    font-family: Pixel;
+    font-size: 150px;
+    z-index: 100;
+    top: 200px;
+    left: 250px;
+}
