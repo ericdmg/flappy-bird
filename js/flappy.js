@@ -112,9 +112,12 @@ function Bird(gameHeight){
 
 function Progress(){
     this.element = createNewElement('span', 'progress')
+    this.gameOver = createNewElement('span', 'game-over')
     this.updatePoints = points => this.element.innerHTML = points
     this.updatePoints(0)
 }
+
+
 
 function areOverlapping(elementA, elementB){
     const a = elementA.getBoundingClientRect()
@@ -156,6 +159,7 @@ function FlappyBird(){
 
     const bird = new Bird(height)
     gameArea.appendChild(progress.element)
+    gameArea.appendChild(progress.gameOver)
     gameArea.appendChild(bird.element)
     barriers.pairs.forEach(pair => gameArea.appendChild(pair.element))
 
@@ -168,6 +172,7 @@ function FlappyBird(){
                 clearInterval(temporizador)
                 audio.level.pause()
                 audio.death.play()
+                progress.gameOver.innerHTML = `GAME OVER! Score => ${points}`
             }
         }, 20)
     }
