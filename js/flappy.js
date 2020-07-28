@@ -1,3 +1,9 @@
+const audio = {
+    level: new Audio('audio/level.mp3'),
+    death: new Audio('audio/death.mp3'),
+    score: new Audio('audio/score.mp3')
+}
+
 function createNewElement(tagName, className){
     const elem = document.createElement(tagName)
     elem.className = className
@@ -64,8 +70,6 @@ function Barriers(height, width, opening, spaceBetweenBarriers, notifyPoints){
             }
 
             const middle = width / 2
-            const a = this.pairs[0].inferior.element.style.width
-            console.log(a)
             const mouthpiece = document.querySelector('.mouthpiece')
             const bird = document.querySelector('.bird')
             const mouthPieceWidth = mouthpiece.computedStyleMap().get('width').value
@@ -74,7 +78,7 @@ function Barriers(height, width, opening, spaceBetweenBarriers, notifyPoints){
             const middleCrossed = pair.getX() + displacement >= middle - mouthPieceWidth - birdWidth
                 && pair.getX() < middle - mouthPieceWidth - birdWidth
 
-            middleCrossed && notifyPoints()
+            middleCrossed && notifyPoints() && audio.score.play()
         })
     }
 }
@@ -95,10 +99,10 @@ function Bird(gameHeight){
         const newY = this.getY() + (flying ? 8 : -5)
         const maximumHeight = gameHeight - this.element.clientHeight
 
-        if(this.getY() <= 0){
+        if(newY <= 0){
             this.setY(0)
         }
-        else if(this.getY() >= maximumHeight){
+        else if(newY >= maximumHeight){
             this.setY(maximumHeight)
         }
         else this.setY(newY)
@@ -159,8 +163,11 @@ function FlappyBird(){
         const temporizador = setInterval(() => {
             barriers.animate()
             bird.animate()
+            audio.level.play()
             if(collided(bird, barriers)){
                 clearInterval(temporizador)
+                audio.level.pause()
+                audio.death.play()
             }
         }, 20)
     }
